@@ -7,7 +7,7 @@ use Crypt::OpenSSL::EC;
 use Crypt::OpenSSL::Bignum;
 use Crypt::OpenSSL::BaseFunc;
 use Data::Dumper;
-use Smart::Comments;
+#use Smart::Comments;
 
 my $group_name = "prime256v1";
 my $type = 'sswu';

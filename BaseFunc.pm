@@ -11,7 +11,7 @@ use Crypt::OpenSSL::EC;
 use Crypt::OpenSSL::Bignum;
 use POSIX;
 
-use Smart::Comments;
+#use Smart::Comments;
 
 our $VERSION = '0.039';
 

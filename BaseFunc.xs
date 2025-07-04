@@ -721,16 +721,16 @@ EVP_PKEY* export_ec_pubkey(EVP_PKEY *priv_pkey)
     int nid=0;
     unsigned char *group_name = NULL;
 
-    group_name=get_pkey_utf8_string_param(priv_pkey, OSSL_PKEY_PARAM_GROUP_NAME);
-    nid = OBJ_txt2nid(group_name);
-    if(!nid){
-        nid = EVP_PKEY_get_base_id(priv_pkey);
-        group_name = (unsigned char*) OBJ_nid2sn(nid);
-    }
+    //group_name=get_pkey_utf8_string_param(priv_pkey, OSSL_PKEY_PARAM_GROUP_NAME);
+    //nid = OBJ_txt2nid(group_name);
+    nid = EVP_PKEY_get_base_id(priv_pkey);
+    group_name = (unsigned char*) OBJ_nid2sn(nid);
 
     EVP_PKEY_get_octet_string_param(priv_pkey, OSSL_PKEY_PARAM_PUB_KEY, NULL, 0, &pubkey_len);
     pubkey=OPENSSL_malloc(pubkey_len);
     EVP_PKEY_get_octet_string_param(priv_pkey, OSSL_PKEY_PARAM_PUB_KEY, pubkey, pubkey_len, &pubkey_len);
+
+   //hexdump("pubkey", pubkey, pubkey_len); 
 
     if(pubkey_len<1){
         BIGNUM* priv_bn= get_pkey_bn_param(priv_pkey, OSSL_PKEY_PARAM_PRIV_KEY);

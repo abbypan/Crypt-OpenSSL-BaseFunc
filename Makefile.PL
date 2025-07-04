@@ -32,9 +32,9 @@ WriteMakefile(
         'bignum' => 0.52, 
     }, 
     EXE_FILES => [ 'bin/ec_conv.pl' ], 
-    'LIBS'   => [openssl_lib_paths() . $openssl_local_lib . ' -lssl -lcrypto'],
+    'LIBS'   => [$openssl_local_lib . openssl_lib_paths() . ' -lssl -lcrypto'],
     DEFINE            => '-DPERL5 -DOPENSSL_NO_KRB5',
-    'INC' => openssl_inc_paths() . $openssl_local_inc,    # e.g., '-I/usr/include/other'
+    'INC' =>  $openssl_local_inc . openssl_inc_paths() ,    # e.g., '-I/usr/include/other'
     'MIN_PERL_VERSION' => 5.006,
 
     DEFINE            => '-DPERL5 -DOPENSSL_NO_KRB5',

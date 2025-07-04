@@ -4,10 +4,11 @@ use warnings;
 #use lib '../lib';
 
 use Test::More;
-use Crypt::OpenSSL::BaseFunc;
 use FindBin;
 #use Smart::Comments;
 use Data::Dumper;
+
+use Crypt::OpenSSL::BaseFunc;
 
 my $group_name = "prime256v1";
 
@@ -43,24 +44,8 @@ my $sig = ecdsa_sign($priv_pkey, 'sha256', $msg);
 my $sig_ret = ecdsa_verify($pub_pkey, 'sha256', $msg, $sig);
 is($sig_ret, 1, "ecdsa sign & ecdsa verify");
 
-{
-my $group_name = 'X25519';
-my $priv_pkey = gen_ec_key($group_name, 'C045A847EE3472F65B218AF2642EB563B8E9D8E7E9E3B1B118775347FBE54D66');
-my $priv_hex = read_key($priv_pkey);
-print "priv:", $priv_hex, "\n";
-
-my $pub_pkey = export_ec_pubkey($priv_pkey);
-my $pub_hex = read_ec_pubkey($pub_pkey, 0);
-print "pub:", $pub_hex, "\n";
-
-my $priv_pkey2 = gen_ec_key($group_name, '');
-my $pub_pkey2 = export_ec_pubkey($priv_pkey2);
-
-is(ecdh($priv_pkey, $pub_pkey2), ecdh($priv_pkey2, $pub_pkey), "gen ec key");
-
 $group_name = 'prime256v1';
-#$priv_pkey = gen_ec_key($group_name, '732B18540FCB731FD3C46E6D4E19A56525346A8A30D0B7B7B2547283978584E9');
-$priv_pkey = gen_ec_key($group_name, 'c36139381df63bfc91c850db0b9cfbec7a62e86d80040a41aa7725bf0e79d5e5');
+$priv_pkey = gen_ec_key($group_name, '732B18540FCB731FD3C46E6D4E19A56525346A8A30D0B7B7B2547283978584E9');
 $priv_hex = read_key($priv_pkey);
 print "priv:", $priv_hex, "\n";
 
@@ -72,9 +57,25 @@ $priv_pkey2 = gen_ec_key($group_name, '');
 $pub_pkey2 = export_ec_pubkey($priv_pkey2);
 
 is(ecdh($priv_pkey, $pub_pkey2), ecdh($priv_pkey2, $pub_pkey), "gen ec key");
-}
 
-done_testing;
+
+$group_name = 'X25519';
+$priv_pkey = gen_ec_key($group_name, 'C045A847EE3472F65B218AF2642EB563B8E9D8E7E9E3B1B118775347FBE54D66');
+$priv_hex = read_key($priv_pkey);
+print "priv:", $priv_hex, "\n";
+
+$pub_pkey = export_ec_pubkey($priv_pkey);
+$pub_hex = read_ec_pubkey($pub_pkey, 0);
+print "pub:", $pub_hex, "\n";
+
+$priv_pkey2 = gen_ec_key($group_name, '');
+$pub_pkey2 = export_ec_pubkey($priv_pkey2);
+
+is(ecdh($priv_pkey, $pub_pkey2), ecdh($priv_pkey2, $pub_pkey), "gen ec key");
+
+
+
+done_testing();
 
 1;
 
