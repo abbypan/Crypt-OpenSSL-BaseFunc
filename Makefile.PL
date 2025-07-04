@@ -7,6 +7,10 @@ use Crypt::OpenSSL::Guess;
 
 # This is similar to what Crypt::OpenSSL::EC, Crypt::OpenSSL::RSA does.
 
+my $openssl_local_lib = qq[ -L/usr/local/lib -L/usr/local/lib64 -L/usr/local/openssl/lib -L/usr/local/openssl/lib64 ];
+my $openssl_local_inc = qq[ -I/usr/local/include -I/usr/local/openssl/include ];
+
+
 print openssl_lib_paths(), "\n";
 print openssl_inc_paths(), "\n";
 
@@ -28,9 +32,9 @@ WriteMakefile(
         'bignum' => 0.52, 
     }, 
     EXE_FILES => [ 'bin/ec_conv.pl' ], 
-    'LIBS'   => [openssl_lib_paths() . ' -lssl -lcrypto'],
+    'LIBS'   => [openssl_lib_paths() . $openssl_local_lib . ' -lssl -lcrypto'],
     DEFINE            => '-DPERL5 -DOPENSSL_NO_KRB5',
-    'INC' => openssl_inc_paths(),    # e.g., '-I/usr/include/other'
+    'INC' => openssl_inc_paths() . $openssl_local_inc,    # e.g., '-I/usr/include/other'
     'MIN_PERL_VERSION' => 5.006,
 
     DEFINE            => '-DPERL5 -DOPENSSL_NO_KRB5',

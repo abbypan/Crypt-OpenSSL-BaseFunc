@@ -1,7 +1,7 @@
 bin/ec_conv.pl
 Changes
-Func.pm
-Func.xs
+BaseFunc.pm
+BaseFunc.xs
 LICENSE
 Makefile.PL
 MANIFEST			This list of files

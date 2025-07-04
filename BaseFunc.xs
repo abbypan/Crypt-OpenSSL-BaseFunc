@@ -29,6 +29,21 @@ bool is_empty(unsigned char* s){
     return false;
 }
 
+unsigned char* point2hex(unsigned char *group_name, EC_POINT *P, int conv_form)
+{
+	int nid = OBJ_txt2nid(group_name);
+	EC_GROUP *group = EC_GROUP_new_by_curve_name(nid);
+
+	BN_CTX *ctx = BN_CTX_new();
+
+	unsigned char* s = EC_POINT_point2hex(group, P, conv_form, ctx);
+
+	EC_GROUP_free(group);
+	BN_CTX_free(ctx);
+
+	return s;
+}
+
 EC_POINT* hex2point(unsigned char* group_name, unsigned char* point_hex)
   {
     int nid = OBJ_txt2nid(group_name);
@@ -552,6 +567,49 @@ size_t  calc_ec_pub_from_priv(unsigned char* group_name, BIGNUM* priv_bn, unsign
     return pubkey_len; 
 }
 
+int clear_cofactor(EC_GROUP *group, EC_POINT *P, EC_POINT *Q, BN_CTX* ctx){
+    const BIGNUM *cofactor = EC_GROUP_get0_cofactor(group);
+    // P = 0*Base + cofactor * Q
+    EC_POINT_mul(group, P, NULL, Q, cofactor, ctx);
+    return 1;
+}
+
+EC_POINT * gen_ec_point(unsigned char *group_name, 
+BIGNUM *x_bn, BIGNUM *y_bn, int clear_cofactor_flag
+//unsigned char* x, size_t x_len, unsigned char *y, size_t y_len
+)
+{
+
+    int nid = OBJ_txt2nid(group_name);
+
+    EC_GROUP *group = EC_GROUP_new_by_curve_name(nid);
+    BN_CTX *ctx = BN_CTX_new();
+
+    EC_POINT *Q = EC_POINT_new(group);
+
+    //BIGNUM *x_bn = BN_bin2bn(x, x_len, NULL);
+    //BIGNUM *y_bn = BN_bin2bn(y, y_len, NULL);
+
+    EC_POINT_set_affine_coordinates( group, Q, x_bn, y_bn, ctx );
+
+    if(clear_cofactor_flag){
+	    EC_POINT *P = EC_POINT_new(group);
+	    clear_cofactor(group, P, Q, ctx);
+	    OPENSSL_free(Q);
+	    Q = P;
+    }
+
+    //printf("point2hex::: %s\n", EC_POINT_point2hex(group, Q, 4, ctx)); 
+
+    OPENSSL_free(group);
+    OPENSSL_free(ctx);
+    //OPENSSL_free(x_bn);
+    //OPENSSL_free(y_bn);
+
+
+    return Q;
+  // int EC_POINT_set_affine_coordinates(const EC_GROUP *group, EC_POINT *p, const BIGNUM *x, const BIGNUM *y, BN_CTX *ctx);
+}
 
 EVP_PKEY * gen_ec_key(unsigned char *group_name, unsigned char* priv_hex)
 {
@@ -962,11 +1020,6 @@ BIGNUM* CMOV(BIGNUM *a, BIGNUM *b, int c){
     return a;
 }
 
-int clear_cofactor(EC_GROUP *group, EC_POINT *P, EC_POINT *Q, BN_CTX* ctx){
-    const BIGNUM *cofactor = EC_GROUP_get0_cofactor(group);
-    EC_POINT_mul(group, P, NULL, Q, cofactor, ctx);
-    return 1;
-}
 
 int calc_c1_c2_for_sswu(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BN_CTX *ctx)
 {
@@ -1126,6 +1179,8 @@ EVP_PKEY * gen_ec_key(unsigned char *group_name, unsigned char* priv_hex)
 
 EVP_PKEY * gen_ec_pubkey(unsigned char* group_name, unsigned char* point_hex)
 
+EC_POINT * gen_ec_point(unsigned char *group_name, BIGNUM *x_bn, BIGNUM *y_bn, int clear_cofactor_flag)
+
 char * bin2hex(unsigned char * bin, size_t len)
 
 BIGNUM* bn_mod_sqrt(BIGNUM *a, BIGNUM *p)
@@ -1168,6 +1223,10 @@ unsigned char* get_pkey_utf8_string_param(EVP_PKEY *pkey, unsigned char *param_n
 
 void print_pkey_gettable_params(EVP_PKEY *pkey)
 
+char *EC_POINT_point2hex(const EC_GROUP *group, const EC_POINT *p, point_conversion_form_t form, BN_CTX *ctx)
+
+unsigned char* point2hex(unsigned char *group_name, EC_POINT *P, int conv_form)
+
 int OBJ_sn2nid (const char *s)
 
 const EVP_MD *EVP_get_digestbyname(const char *name)
@@ -1177,6 +1236,8 @@ int EVP_MD_get_block_size(const EVP_MD *md)
 int EVP_MD_get_size(const EVP_MD *md)
 
 int EC_GROUP_get_curve(const EC_GROUP *group, BIGNUM *p, BIGNUM *a, BIGNUM *b, BN_CTX *ctx)
+
+EC_POINT *EC_POINT_new(const EC_GROUP *group)
 
 int EC_POINT_set_affine_coordinates(const EC_GROUP *group, EC_POINT *p, const BIGNUM *x, const BIGNUM *y, BN_CTX *ctx)
 
@@ -1589,3 +1650,5 @@ int calc_c1_c2_for_sswu(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b,
 int map_to_curve_sswu_straight_line(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BIGNUM *u, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
 
 int map_to_curve_sswu_not_straight_line(BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BIGNUM *u, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
+
+

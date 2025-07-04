@@ -10,7 +10,8 @@ use AutoLoader;
 use Crypt::OpenSSL::EC;
 use Crypt::OpenSSL::Bignum;
 use POSIX;
-#use Smart::Comments;
+
+use Smart::Comments;
 
 our $VERSION = '0.039';
 
@@ -25,11 +26,14 @@ EVP_MD_get_block_size
 EVP_MD_get_size
 EVP_PKEY_get1_EC_KEY
 EVP_get_digestbyname
+EC_POINT_point2hex
 OBJ_sn2nid
 OBJ_nid2sn
+EC_POINT_new
 );
 
 our @XSF = qw(
+point2hex
 hex2point
 aead_decrypt
 aead_encrypt
@@ -42,6 +46,7 @@ export_ec_pubkey
 export_rsa_pubkey
 gen_ec_key
 gen_ec_pubkey
+gen_ec_point
 get_ec_params
 get_pkey_bn_param
 get_pkey_octet_string_param
@@ -335,14 +340,12 @@ sub map_to_curve {
       @{$params_ref}{qw/c1 c2 p a b z/}, 
       $u, $x, $y, $params_ref->{ctx} );
 
-  my $Q = Crypt::OpenSSL::EC::EC_POINT::new( $params_ref->{group} );
-  EC_POINT_set_affine_coordinates( $params_ref->{group}, $Q, $x, $y, $params_ref->{ctx} );
+  ### $u 
+  my $Q = gen_ec_point($group_name, $x, $y, $clear_cofactor_flag);
 
-  return $Q unless ( $clear_cofactor_flag );
+  ### $Q
 
-  my $P = Crypt::OpenSSL::EC::EC_POINT::new( $params_ref->{group} );
-  clear_cofactor( $params_ref->{group}, $P, $Q, $params_ref->{ctx} );
-  return $P;
+  return $Q;
 } ## end sub map_to_curve
 
 
