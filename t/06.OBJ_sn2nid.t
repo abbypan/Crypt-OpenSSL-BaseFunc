@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::More ;
-use Crypt::OpenSSL::Base::Func;
+use Crypt::OpenSSL::BaseFunc;
 
 my $group_name = "prime256v1";
 my $nid = OBJ_sn2nid($group_name);

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use utf8;
 use Test::More;
-use Crypt::OpenSSL::Base::Func qw/bn_mod_sqrt/;
+use Crypt::OpenSSL::BaseFunc qw/bn_mod_sqrt/;
 use Crypt::OpenSSL::Bignum;
 use Data::Dumper;
 

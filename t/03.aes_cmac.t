@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use utf8;
 use Test::More;
-use Crypt::OpenSSL::Base::Func ;
+use Crypt::OpenSSL::BaseFunc ;
 
 #aes_cmac: test vector from RFC 4493
 my $key = pack("H*", '2b7e151628aed2a6abf7158809cf4f3c');

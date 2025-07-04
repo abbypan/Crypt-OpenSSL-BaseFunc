@@ -7,13 +7,16 @@ use Crypt::OpenSSL::Guess;
 
 # This is similar to what Crypt::OpenSSL::EC, Crypt::OpenSSL::RSA does.
 
+print openssl_lib_paths(), "\n";
+print openssl_inc_paths(), "\n";
+
 WriteMakefile(
-    NAME              => 'Crypt::OpenSSL::Base::Func',
+    NAME              => 'Crypt::OpenSSL::BaseFunc',
     AUTHOR             => 'Pan Lanlan <abbypan@gmail.com>',
-    VERSION_FROM      => 'Func.pm',
+    VERSION_FROM      => 'BaseFunc.pm',
     ABSTRACT  => 'Crypt Base Functions, using the OpenSSL libraries', 
     'LICENSE'  => 'Mozilla_2_0', 
-    'DISTNAME'         => 'Crypt-OpenSSL-Base-Func',
+    'DISTNAME'         => 'Crypt-OpenSSL-BaseFunc',
     PREREQ_PM         => { 
         'Carp' => 0.01,
         'Crypt::OpenSSL::Bignum' => 0.09,
@@ -32,7 +35,7 @@ WriteMakefile(
 
     DEFINE            => '-DPERL5 -DOPENSSL_NO_KRB5',
     'dist'  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    'clean' => { FILES    => 'Crypt-OpenSSL-Base-Func-*' },
+    'clean' => { FILES    => 'Crypt-OpenSSL-BaseFunc-*' },
 
     (
         $ExtUtils::MakeMaker::VERSION >= 6.46
@@ -57,9 +60,9 @@ WriteMakefile(
                 },
                 resources => {
                     'license'    => 'http://dev.perl.org/licenses/',
-                    'homepage'   => 'http://github.com/abbypan/Crypt-OpenSSL-Base-Func',
-                    'bugtracker' => 'https://github.com/abbypan/Crypt-OpenSSL-Base-Func/issues',
-                    'repository' => 'http://github.com/abbypan/Crypt-OpenSSL-Base-Func',
+                    'homepage'   => 'http://github.com/abbypan/Crypt-OpenSSL-BaseFunc',
+                    'bugtracker' => 'https://github.com/abbypan/Crypt-OpenSSL-BaseFunc/issues',
+                    'repository' => 'http://github.com/abbypan/Crypt-OpenSSL-BaseFunc',
                 }
             }
         )

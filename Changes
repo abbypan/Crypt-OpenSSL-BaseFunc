@@ -1,4 +1,7 @@
-Revision history for Perl extension Crypt::OpenSSL::Base::Func.
+Revision history for Perl extension Crypt::OpenSSL::BaseFunc.
+
+0.039 2025/07/05
+  -  merge hash2curve
 
 0.038 2024/04/26
    -  ec_conv.pl

@@ -2,7 +2,7 @@
 use utf8;
 use strict;
 use Test::More;
-use Crypt::OpenSSL::Base::Func ;
+use Crypt::OpenSSL::BaseFunc ;
 use FindBin;
 
 my $a_priv = read_key_from_pem("$FindBin::Bin/x25519_a_priv.pem");

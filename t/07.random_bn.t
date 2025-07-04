@@ -3,7 +3,7 @@
 #use lib '../lib';
 
 use Test::More;
-use Crypt::OpenSSL::Base::Func;
+use Crypt::OpenSSL::BaseFunc;
 
 my $Nn = 16;
 my $rnd = random_bn($Nn);

@@ -4,7 +4,7 @@ use warnings;
 #use lib '../lib';
 
 use Test::More;
-use Crypt::OpenSSL::Base::Func;
+use Crypt::OpenSSL::BaseFunc;
 use FindBin;
 #use Smart::Comments;
 use Data::Dumper;

@@ -12,7 +12,7 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : 2
    },
-   "name" : "Crypt-OpenSSL-Base-Func",
+   "name" : "Crypt-OpenSSL-BaseFunc",
    "no_index" : {
       "directory" : [
          "t"
@@ -50,14 +50,14 @@
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/abbypan/Crypt-OpenSSL-Base-Func/issues"
+         "web" : "https://github.com/abbypan/Crypt-OpenSSL-BaseFunc/issues"
       },
-      "homepage" : "http://github.com/abbypan/Crypt-OpenSSL-Base-Func",
+      "homepage" : "http://github.com/abbypan/Crypt-OpenSSL-BaseFunc",
       "license" : [
          "http://dev.perl.org/licenses/"
       ],
       "repository" : {
-         "url" : "http://github.com/abbypan/Crypt-OpenSSL-Base-Func"
+         "url" : "http://github.com/abbypan/Crypt-OpenSSL-BaseFunc"
       }
    },
    "version" : "0.31",
