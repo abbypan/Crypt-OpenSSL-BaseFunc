@@ -11,7 +11,7 @@ use Crypt::OpenSSL::EC;
 use Crypt::OpenSSL::Bignum;
 use POSIX;
 
-use Smart::Comments;
+#use Smart::Comments;
 
 our $VERSION = '0.039';
 
@@ -19,6 +19,8 @@ our @ISA = qw(Exporter);
 
 our @OSSLF= qw(
 BN_bn2hex
+EC_POINT_invert
+EC_POINT_add
 EC_GROUP_get_curve
 EC_POINT_get_affine_coordinates
 EC_POINT_set_affine_coordinates
@@ -30,6 +32,7 @@ EC_POINT_point2hex
 OBJ_sn2nid
 OBJ_nid2sn
 EC_POINT_new
+EC_GROUP_get0_order
 );
 
 our @XSF = qw(

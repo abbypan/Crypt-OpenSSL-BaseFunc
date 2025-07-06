@@ -638,7 +638,7 @@ BIGNUM *x_bn, BIGNUM *y_bn, int clear_cofactor_flag
 
     if(clear_cofactor_flag){
 	    EC_POINT *P = EC_POINT_new(group);
-	    clear_cofactor(group, P, Q, ctx);
+        clear_cofactor(group, P, Q, ctx);
 	    OPENSSL_free(Q);
 	    Q = P;
     }
@@ -1218,6 +1218,12 @@ map_to_curve_sswu_not_straight_line(BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, 
 MODULE = Crypt::OpenSSL::BaseFunc		PACKAGE = Crypt::OpenSSL::BaseFunc		
 
 const char *OBJ_nid2sn(int n);
+
+const BIGNUM *EC_GROUP_get0_order(const EC_GROUP *group)
+
+int EC_POINT_invert(const EC_GROUP *group, EC_POINT *a, BN_CTX *ctx)
+
+int EC_POINT_add(const EC_GROUP *group, EC_POINT *r, const EC_POINT *a, const EC_POINT *b, BN_CTX *ctx)
 
 EC_POINT * mul_ec_point(unsigned char *group_name, BIGNUM *x, EC_POINT* Q, BIGNUM *y)
 

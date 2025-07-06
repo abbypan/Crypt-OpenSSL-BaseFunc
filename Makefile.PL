@@ -7,12 +7,8 @@ use Crypt::OpenSSL::Guess;
 
 # This is similar to what Crypt::OpenSSL::EC, Crypt::OpenSSL::RSA does.
 
-my $openssl_local_lib = qq[ -L/usr/local/lib -L/usr/local/lib64 -L/usr/local/openssl/lib -L/usr/local/openssl/lib64 ];
-my $openssl_local_inc = qq[ -I/usr/local/include -I/usr/local/openssl/include ];
-
-
-print openssl_lib_paths(), "\n";
-print openssl_inc_paths(), "\n";
+my $openssl_local_lib = qq[ -L/usr/local/openssl/lib64 -L/usr/local/openssl/lib -L/usr/local/lib64 -L/usr/local/lib ];
+my $openssl_local_inc = qq[ -I/usr/local/openssl/include -I/usr/local/include ];
 
 WriteMakefile(
     NAME              => 'Crypt::OpenSSL::BaseFunc',
@@ -53,13 +49,11 @@ WriteMakefile(
                 },
                 build_requires => {
                     'Test' => 0,    # For testing
+                    'Test::More' => 0.01,
                     'Carp' => 0.01,
                     'Crypt::OpenSSL::Bignum' => 0.09,
                     'Crypt::OpenSSL::EC' => 1.31,
                     'Crypt::OpenSSL::Guess' => 0.12,
-                    'Math::BigInt' => 1.999815,
-                    'Test' => 0.01,
-                    'Test::More' => 0.01,
                     'bignum' => 0.52, 
                 },
                 resources => {
