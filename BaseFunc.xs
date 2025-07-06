@@ -365,10 +365,10 @@ unsigned char* read_pubkey(EVP_PKEY *pkey)
 
 
 
-if(pub){
-   phex = bin2hex(pub, pub_len);    
-   OPENSSL_free(pub);
-}
+    if(pub){
+        phex = bin2hex(pub, pub_len);    
+        OPENSSL_free(pub);
+    }
     return phex;
 }
 
@@ -506,11 +506,19 @@ int hkdf_raw(int mode, unsigned char *digest_name, unsigned char *ikm, size_t ik
     OSSL_PARAM params[6], *p = params;
     OSSL_LIB_CTX *library_context = NULL;
 
-    library_context = OSSL_LIB_CTX_new();
+    /*library_context = OSSL_LIB_CTX_new();*/
+    /*kdf = EVP_KDF_fetch(library_context, "HKDF", NULL);*/
 
-    kdf = EVP_KDF_fetch(library_context, "HKDF", NULL);
-
+    if ((kdf = EVP_KDF_fetch(NULL, "HKDF", NULL)) == NULL) {
+        goto err;
+    }
     kctx = EVP_KDF_CTX_new(kdf);
+    /*EVP_KDF_free(kdf);    */
+    if (kctx == NULL) {
+        goto err;
+    }
+
+    /*kctx = EVP_KDF_CTX_new(kdf);*/
     *p++ = OSSL_PARAM_construct_int(OSSL_KDF_PARAM_MODE, &mode);
     *p++ = OSSL_PARAM_construct_utf8_string(OSSL_KDF_PARAM_DIGEST, digest_name, 0);
     *p++ = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_KEY, ikm, ikm_len);
@@ -518,15 +526,31 @@ int hkdf_raw(int mode, unsigned char *digest_name, unsigned char *ikm, size_t ik
     *p++ = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_SALT, salt, salt_len);
     *p = OSSL_PARAM_construct_end();
 
-    *okm = OPENSSL_malloc(okm_len);
-    if (EVP_KDF_derive(kctx, *okm, okm_len, params) != 1) {
-        OPENSSL_free(*okm);
-        okm_len = -1;
+
+
+    if (EVP_KDF_CTX_set_params(kctx, params) <= 0) {
+        goto err;
     }
+
+    *okm = OPENSSL_malloc(okm_len);
+
+    if (EVP_KDF_derive(kctx, *okm, okm_len, NULL) <= 0) {
+        goto err;
+    }
+
+
+    /*if (EVP_KDF_derive(kctx, *okm, okm_len, params) != 1) {*/
+        /*OPENSSL_free(*okm);*/
+        /*okm_len = -1;*/
+    /*}*/
+
+    /*hexdump("okm", *okm, okm_len);*/
+
+err:
 
     EVP_KDF_CTX_free(kctx);
     EVP_KDF_free(kdf);
-    OSSL_LIB_CTX_free(library_context);
+    /*OSSL_LIB_CTX_free(library_context);*/
 
     return okm_len;
 }
@@ -573,6 +597,26 @@ int clear_cofactor(EC_GROUP *group, EC_POINT *P, EC_POINT *Q, BN_CTX* ctx){
     EC_POINT_mul(group, P, NULL, Q, cofactor, ctx);
     return 1;
 }
+
+EC_POINT * mul_ec_point(unsigned char *group_name, BIGNUM *x, EC_POINT* Q, BIGNUM *y)
+{
+    int nid = OBJ_txt2nid(group_name);
+
+    EC_GROUP *group = EC_GROUP_new_by_curve_name(nid);
+    BN_CTX *ctx = BN_CTX_new();
+
+    EC_POINT *P = EC_POINT_new(group);
+    EC_POINT_mul(group, P, x, Q, y, ctx);
+
+err:
+    OPENSSL_free(group);
+    OPENSSL_free(ctx);
+
+    return P;
+
+}
+
+
 
 EC_POINT * gen_ec_point(unsigned char *group_name, 
 BIGNUM *x_bn, BIGNUM *y_bn, int clear_cofactor_flag
@@ -719,18 +763,22 @@ EVP_PKEY* export_ec_pubkey(EVP_PKEY *priv_pkey)
     unsigned char *pub_hex;
     EVP_PKEY *pub_pkey = NULL;
     int nid=0;
-    unsigned char *group_name = NULL;
+    unsigned char group_name[100];
+    size_t group_name_len;
 
-    //group_name=get_pkey_utf8_string_param(priv_pkey, OSSL_PKEY_PARAM_GROUP_NAME);
     //nid = OBJ_txt2nid(group_name);
     nid = EVP_PKEY_get_base_id(priv_pkey);
-    group_name = (unsigned char*) OBJ_nid2sn(nid);
+    /*group_name=get_pkey_utf8_string_param(priv_pkey, OSSL_PKEY_PARAM_GROUP_NAME);*/
+    EVP_PKEY_get_group_name(priv_pkey, group_name, sizeof(group_name), &group_name_len);
+    /*group_name = (unsigned char*) OBJ_nid2sn(nid);*/
+
+    /*printf("%d, %s,\n", nid, group_name);*/
 
     EVP_PKEY_get_octet_string_param(priv_pkey, OSSL_PKEY_PARAM_PUB_KEY, NULL, 0, &pubkey_len);
     pubkey=OPENSSL_malloc(pubkey_len);
     EVP_PKEY_get_octet_string_param(priv_pkey, OSSL_PKEY_PARAM_PUB_KEY, pubkey, pubkey_len, &pubkey_len);
 
-   //hexdump("pubkey", pubkey, pubkey_len); 
+   /*hexdump("pubkey", pubkey, pubkey_len); */
 
     if(pubkey_len<1){
         BIGNUM* priv_bn= get_pkey_bn_param(priv_pkey, OSSL_PKEY_PARAM_PRIV_KEY);
@@ -739,8 +787,12 @@ EVP_PKEY* export_ec_pubkey(EVP_PKEY *priv_pkey)
     }
 
     pub_hex = bin2hex(pubkey, pubkey_len);
+
+    /*printf("%s\n", pub_hex);*/
+
     pub_pkey = gen_ec_pubkey(group_name, pub_hex);
-    OPENSSL_free(pub_hex);
+
+    /*OPENSSL_free(pub_hex);*/
 
     return pub_pkey;
 }
@@ -831,7 +883,6 @@ int ecdsa_verify_raw(EVP_PKEY *pub_key, const char *sig_name, char *msg, int msg
     OSSL_LIB_CTX *libctx = NULL;
     unsigned char *sig_value = NULL;
     EVP_MD_CTX *verify_context = NULL;
-    int ret = 0;
 
     libctx = OSSL_LIB_CTX_new();
     verify_context = EVP_MD_CTX_new();
@@ -840,9 +891,8 @@ int ecdsa_verify_raw(EVP_PKEY *pub_key, const char *sig_name, char *msg, int msg
 
     EVP_DigestVerifyUpdate(verify_context, msg, msg_len); 
 
-    if (EVP_DigestVerifyFinal(verify_context, sig, sig_len)) {
-        ret = 1;
-    }
+    int ret=EVP_DigestVerifyFinal(verify_context, sig, sig_len);
+
 
     EVP_MD_CTX_free(verify_context);
     OSSL_LIB_CTX_free(libctx);
@@ -1169,6 +1219,8 @@ MODULE = Crypt::OpenSSL::BaseFunc		PACKAGE = Crypt::OpenSSL::BaseFunc
 
 const char *OBJ_nid2sn(int n);
 
+EC_POINT * mul_ec_point(unsigned char *group_name, BIGNUM *x, EC_POINT* Q, BIGNUM *y)
+
 EC_POINT* hex2point(unsigned char* group_name, unsigned char* point_hex)
 
 char *BN_bn2hex(const BIGNUM *a);
@@ -1243,6 +1295,19 @@ int EC_POINT_set_affine_coordinates(const EC_GROUP *group, EC_POINT *p, const BI
 
 int EC_POINT_get_affine_coordinates(const EC_GROUP *group, const EC_POINT *p, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
 
+int sgn0_m_eq_1(BIGNUM *x)
+
+int clear_cofactor(EC_GROUP *group, EC_POINT *P, EC_POINT *Q, BN_CTX* ctx)
+
+BIGNUM* CMOV(BIGNUM *a, BIGNUM *b, int c)
+
+int calc_c1_c2_for_sswu(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BN_CTX *ctx)
+
+int map_to_curve_sswu_straight_line(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BIGNUM *u, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
+
+int map_to_curve_sswu_not_straight_line(BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BIGNUM *u, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
+
+
 SV* hkdf_main(int mode, unsigned char* digest_name, SV* ikm_sv, SV* salt_sv, SV* info_sv, size_t okm_len)
     CODE:
     {
@@ -1259,7 +1324,13 @@ SV* hkdf_main(int mode, unsigned char* digest_name, SV* ikm_sv, SV* salt_sv, SV*
     salt = (unsigned char*) SvPV( salt_sv, salt_len );
     info = (unsigned char*) SvPV( info_sv, info_len );
 
+    /*hexdump("hkdf main ikm", ikm, ikm_len);*/
+    /*hexdump("hkdf main salt", salt, salt_len);*/
+    /*hexdump("hkdf main info", info, info_len);*/
+
     out_len = hkdf_raw(mode, digest_name, ikm, ikm_len, salt, salt_len, info, info_len, &okm, okm_len);
+
+    /*hexdump("hkdf main okm", okm, okm_len);*/
 
     RETVAL = newSVpv(okm, out_len);
 
@@ -1549,9 +1620,9 @@ SV* aead_encrypt(unsigned char* cipher_name, SV* plaintext_SV, SV* aad_SV, SV* k
 SV* aead_decrypt(unsigned char* cipher_name, SV* ciphertext_SV, SV* aad_SV, SV* tag_SV, SV* key_SV, SV* iv_SV)
     CODE:
     {
-    SV *res;
+    SV *res =NULL;
     unsigned char *plaintext;
-    size_t plaintext_len;
+    int plaintext_len;
     unsigned char *ciphertext;
     size_t ciphertext_len;
     unsigned char *aad;
@@ -1571,7 +1642,9 @@ SV* aead_decrypt(unsigned char* cipher_name, SV* ciphertext_SV, SV* aad_SV, SV* 
 
     plaintext_len = aead_decrypt_raw(cipher_name, ciphertext, ciphertext_len, aad, aad_len, tag, tag_len, key, iv, iv_len, &plaintext);
 
-    res = newSVpv(plaintext, plaintext_len);
+    if(plaintext_len>0){
+        res = newSVpv(plaintext, plaintext_len);
+    }
 
     RETVAL = res;
     }
@@ -1639,16 +1712,5 @@ SV* rsa_oaep_decrypt(unsigned char* digest_name, EVP_PKEY *priv, SV* ciphertext_
 
 
 
-int sgn0_m_eq_1(BIGNUM *x)
-
-int clear_cofactor(EC_GROUP *group, EC_POINT *P, EC_POINT *Q, BN_CTX* ctx)
-
-BIGNUM* CMOV(BIGNUM *a, BIGNUM *b, int c)
-
-int calc_c1_c2_for_sswu(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BN_CTX *ctx)
-
-int map_to_curve_sswu_straight_line(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BIGNUM *u, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
-
-int map_to_curve_sswu_not_straight_line(BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BIGNUM *u, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
 
 

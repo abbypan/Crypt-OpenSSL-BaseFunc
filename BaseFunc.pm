@@ -11,7 +11,7 @@ use Crypt::OpenSSL::EC;
 use Crypt::OpenSSL::Bignum;
 use POSIX;
 
-#use Smart::Comments;
+use Smart::Comments;
 
 our $VERSION = '0.039';
 
@@ -33,6 +33,7 @@ EC_POINT_new
 );
 
 our @XSF = qw(
+mul_ec_point
 point2hex
 hex2point
 aead_decrypt
@@ -187,14 +188,24 @@ sub i2osp {
 sub generate_ec_key {
     my ( $group_name, $priv_hex ) = @_;
 
+    ### generate_ec_key
+
     my $priv_pkey = gen_ec_key($group_name, $priv_hex || '');
     $priv_hex = read_key($priv_pkey);
     my $priv_bn  = Crypt::OpenSSL::Bignum->new_from_hex($priv_hex);
-    #print "hex:$priv_hex,\n";
+   
+    ### $priv_hex
 
     my $pub_pkey = export_ec_pubkey($priv_pkey);
+
+    ### $pub_pkey
+    
+    ### read_pubkey: read_pubkey($pub_pkey)
+
     my $pub_hex = read_ec_pubkey($pub_pkey, 1);
-    #print "hex:$pub_hex,\n";
+
+    ### $pub_hex
+
     my $pub_bin  = pack( "H*", $pub_hex );
 
     my $pub_point =hex2point($group_name, $pub_hex);
