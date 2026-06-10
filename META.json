@@ -26,6 +26,9 @@
             "Crypt::OpenSSL::EC" : "1.31",
             "Crypt::OpenSSL::Guess" : "0.12",
             "ExtUtils::MakeMaker" : "0",
+            "FFI::Build::MM" : "1.00",
+            "FFI::CheckLib" : "0.28",
+            "FFI::Platypus" : "1.00",
             "Math::BigInt" : "1.999815",
             "Test::More" : "0.01",
             "bignum" : "0.52",
@@ -35,13 +38,20 @@
       },
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "Crypt::OpenSSL::Guess" : "0.12",
+            "ExtUtils::MakeMaker" : "0",
+            "FFI::Build::MM" : "1.00"
          }
       },
       "runtime" : {
          "recommends" : {
          },
          "requires" : {
+            "Carp" : "0.01",
+            "Crypt::OpenSSL::Bignum" : "0.09",
+            "Crypt::OpenSSL::EC" : "1.31",
+            "FFI::CheckLib" : "0.28",
+            "FFI::Platypus" : "1.00",
             "Test::More" : "0",
             "perl" : "5.006"
          }

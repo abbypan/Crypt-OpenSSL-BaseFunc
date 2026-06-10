@@ -1,9 +1,9 @@
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-
-#include "ppport.h"
-
+#include <stdbool.h>
+#if defined(_WIN32)
+# define BF_EXPORT __declspec(dllexport)
+#else
+# define BF_EXPORT
+#endif
 #include <openssl/bio.h>
 #include <openssl/bn.h>
 #include <openssl/cmac.h>
@@ -22,14 +22,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-bool is_empty(unsigned char* s){
+BF_EXPORT bool is_empty(unsigned char* s){
     if(strlen(s)==0)
         return true;
 
     return false;
 }
 
-unsigned char* point2hex(unsigned char *group_name, EC_POINT *P, int conv_form)
+BF_EXPORT unsigned char* point2hex(unsigned char *group_name, EC_POINT *P, int conv_form)
 {
 	int nid = OBJ_txt2nid(group_name);
 	EC_GROUP *group = EC_GROUP_new_by_curve_name(nid);
@@ -44,7 +44,7 @@ unsigned char* point2hex(unsigned char *group_name, EC_POINT *P, int conv_form)
 	return s;
 }
 
-EC_POINT* hex2point(unsigned char* group_name, unsigned char* point_hex)
+BF_EXPORT EC_POINT* hex2point(unsigned char* group_name, unsigned char* point_hex)
   {
     int nid = OBJ_txt2nid(group_name);
     EC_GROUP *group = EC_GROUP_new_by_curve_name(nid);
@@ -59,7 +59,7 @@ EC_POINT* hex2point(unsigned char* group_name, unsigned char* point_hex)
     return  ec_point;
   }
 
-void hexdump(unsigned char *info, unsigned char *buf, const int num)
+BF_EXPORT void hexdump(unsigned char *info, unsigned char *buf, const int num)
 {
     int i;
     printf("\n%s, %d\n", info, num);
@@ -81,7 +81,7 @@ void hexdump(unsigned char *info, unsigned char *buf, const int num)
 }
 
 
-size_t slurp(unsigned char* fname, unsigned char **buf){
+BF_EXPORT size_t slurp(unsigned char* fname, unsigned char **buf){
     /* declare a file pointer */
     FILE    *infile;
     size_t    buf_len;
@@ -107,14 +107,14 @@ size_t slurp(unsigned char* fname, unsigned char **buf){
     return buf_len;
 }
 
-BIGNUM* hex2bn(unsigned char* a)
+BF_EXPORT BIGNUM* hex2bn(unsigned char* a)
 {
     BIGNUM* bn_a = BN_new();
     BN_hex2bn(&bn_a, a); 
     return bn_a;
 }
 
-unsigned char * bin2hex(unsigned char * bin, size_t bin_len)
+BF_EXPORT unsigned char * bin2hex(unsigned char * bin, size_t bin_len)
 {
 
     unsigned char   *out = NULL;
@@ -127,7 +127,7 @@ unsigned char * bin2hex(unsigned char * bin, size_t bin_len)
     return out;
 }
 
-BIGNUM* get_pkey_bn_param(EVP_PKEY *pkey, unsigned char *param_name)
+BF_EXPORT BIGNUM* get_pkey_bn_param(EVP_PKEY *pkey, unsigned char *param_name)
 {
     BIGNUM *x_bn = NULL;
 
@@ -136,7 +136,7 @@ BIGNUM* get_pkey_bn_param(EVP_PKEY *pkey, unsigned char *param_name)
     return x_bn;
 }
 
-size_t get_pkey_octet_string_param_raw(EVP_PKEY *pkey, unsigned char *param_name, unsigned char **s)
+BF_EXPORT size_t get_pkey_octet_string_param_raw(EVP_PKEY *pkey, unsigned char *param_name, unsigned char **s)
 {
     size_t s_len;
 
@@ -147,7 +147,7 @@ size_t get_pkey_octet_string_param_raw(EVP_PKEY *pkey, unsigned char *param_name
     return s_len;
 }
 
-unsigned char* get_pkey_utf8_string_param(EVP_PKEY *pkey, unsigned char *param_name)
+BF_EXPORT unsigned char* get_pkey_utf8_string_param(EVP_PKEY *pkey, unsigned char *param_name)
 {
     unsigned char *s=NULL;
     size_t s_len;
@@ -164,7 +164,7 @@ unsigned char* get_pkey_utf8_string_param(EVP_PKEY *pkey, unsigned char *param_n
     return s;
 }
 
-EVP_PKEY *export_rsa_pubkey(EVP_PKEY *rsa_priv)
+BF_EXPORT EVP_PKEY * export_rsa_pubkey(EVP_PKEY *rsa_priv)
 {
 
     OSSL_LIB_CTX *libctx = NULL;
@@ -206,7 +206,7 @@ EVP_PKEY *export_rsa_pubkey(EVP_PKEY *rsa_priv)
     return rsa_pub;
 }
 
-size_t rsa_oaep_encrypt_raw(unsigned char *digest_name, EVP_PKEY *pub, unsigned char* in, size_t in_len, unsigned char ** out)
+BF_EXPORT size_t rsa_oaep_encrypt_raw(unsigned char *digest_name, EVP_PKEY *pub, unsigned char* in, size_t in_len, unsigned char ** out)
 {
     int ret=0;
     OSSL_LIB_CTX *libctx=NULL;
@@ -234,7 +234,7 @@ size_t rsa_oaep_encrypt_raw(unsigned char *digest_name, EVP_PKEY *pub, unsigned 
     return out_len;
 }
 
-size_t rsa_oaep_decrypt_raw(unsigned char *digest_name, EVP_PKEY *priv, unsigned char* in, size_t in_len, unsigned char ** out)
+BF_EXPORT size_t rsa_oaep_decrypt_raw(unsigned char *digest_name, EVP_PKEY *priv, unsigned char* in, size_t in_len, unsigned char ** out)
 {
     int ret=0;
     OSSL_LIB_CTX *libctx=NULL;
@@ -262,7 +262,7 @@ size_t rsa_oaep_decrypt_raw(unsigned char *digest_name, EVP_PKEY *priv, unsigned
     return out_len;
 }
 
-unsigned char* read_key(EVP_PKEY *pkey)
+BF_EXPORT unsigned char* read_key(EVP_PKEY *pkey)
 {
   BIGNUM *priv_bn = NULL;
     char* priv_hex = NULL;
@@ -289,7 +289,7 @@ unsigned char* read_key(EVP_PKEY *pkey)
 
 }
 
-EVP_PKEY* read_key_from_der(unsigned char* keyfile) 
+BF_EXPORT EVP_PKEY* read_key_from_der(unsigned char* keyfile) 
 {
 
     EVP_PKEY *pkey = NULL;
@@ -309,7 +309,7 @@ EVP_PKEY* read_key_from_der(unsigned char* keyfile)
 
 }
 
-EVP_PKEY* read_pubkey_from_der(unsigned char* keyfile) 
+BF_EXPORT EVP_PKEY* read_pubkey_from_der(unsigned char* keyfile) 
 {
 
     EVP_PKEY *pkey = NULL;
@@ -322,7 +322,7 @@ EVP_PKEY* read_pubkey_from_der(unsigned char* keyfile)
     return pkey;
 }
 
-EVP_PKEY* read_key_from_pem(unsigned char* keyfile) 
+BF_EXPORT EVP_PKEY* read_key_from_pem(unsigned char* keyfile) 
 {
 
     EVP_PKEY *pkey = NULL;
@@ -337,7 +337,7 @@ EVP_PKEY* read_key_from_pem(unsigned char* keyfile)
     return pkey;
 }
 
-EVP_PKEY* read_pubkey_from_pem(unsigned char *keyfile)
+BF_EXPORT EVP_PKEY* read_pubkey_from_pem(unsigned char *keyfile)
 {
     FILE *inf = fopen(keyfile, "r");
 
@@ -351,7 +351,7 @@ EVP_PKEY* read_pubkey_from_pem(unsigned char *keyfile)
 
 }
 
-unsigned char* read_pubkey(EVP_PKEY *pkey)
+BF_EXPORT unsigned char* read_pubkey(EVP_PKEY *pkey)
 {
     unsigned char *pub=NULL;
     unsigned char *phex=NULL;
@@ -372,7 +372,7 @@ unsigned char* read_pubkey(EVP_PKEY *pkey)
     return phex;
 }
 
-unsigned char* read_ec_pubkey(EVP_PKEY *pkey, int compressed_flag)
+BF_EXPORT unsigned char* read_ec_pubkey(EVP_PKEY *pkey, int compressed_flag)
 {
     unsigned char* phex = NULL;
     if(compressed_flag){
@@ -384,7 +384,7 @@ unsigned char* read_ec_pubkey(EVP_PKEY *pkey, int compressed_flag)
 
     }
 
-BIGNUM* bn_mod_sqrt(BIGNUM *a, BIGNUM *p)
+BF_EXPORT BIGNUM* bn_mod_sqrt(BIGNUM *a, BIGNUM *p)
 {
 
     BN_CTX *ctx;
@@ -399,7 +399,7 @@ BIGNUM* bn_mod_sqrt(BIGNUM *a, BIGNUM *p)
     return s;
 }
 
-unsigned char* aes_cmac_raw(unsigned char* cipher_name, unsigned char* key, size_t key_len, unsigned char* msg, size_t msg_len, size_t *out_len_ptr ) 
+BF_EXPORT unsigned char* aes_cmac_raw(unsigned char* cipher_name, unsigned char* key, size_t key_len, unsigned char* msg, size_t msg_len, size_t *out_len_ptr ) 
 {
     // https://github.com/openssl/openssl/blob/master/demos/mac/cmac-aes256.c
 
@@ -433,7 +433,7 @@ unsigned char* aes_cmac_raw(unsigned char* cipher_name, unsigned char* key, size
     return out;
 }
 
-unsigned char* pkcs12_key_gen_raw(unsigned char* password, size_t password_len, unsigned char* salt, size_t salt_len, unsigned int id, unsigned int iteration, unsigned char *digest_name, size_t *out_len_ptr)
+BF_EXPORT unsigned char* pkcs12_key_gen_raw(unsigned char* password, size_t password_len, unsigned char* salt, size_t salt_len, unsigned int id, unsigned int iteration, unsigned char *digest_name, size_t *out_len_ptr)
 {
     unsigned char *out = NULL;
     const EVP_MD *digest;
@@ -447,7 +447,7 @@ unsigned char* pkcs12_key_gen_raw(unsigned char* password, size_t password_len, 
     return out;
 }
 
-unsigned char* pkcs5_pbkdf2_hmac_raw(unsigned char* password, size_t password_len, unsigned char *salt, size_t salt_len, unsigned int iteration, unsigned char *digest_name, size_t *out_len_ptr)
+BF_EXPORT unsigned char* pkcs5_pbkdf2_hmac_raw(unsigned char* password, size_t password_len, unsigned char *salt, size_t salt_len, unsigned int iteration, unsigned char *digest_name, size_t *out_len_ptr)
 {
     unsigned char *out = NULL;
     const EVP_MD *digest;
@@ -462,7 +462,7 @@ unsigned char* pkcs5_pbkdf2_hmac_raw(unsigned char* password, size_t password_le
     return out;
 }
 
-int hmac_raw(char *digest_name, unsigned char* key, size_t key_len, unsigned char *data, size_t data_len, unsigned char **out)
+BF_EXPORT int hmac_raw(char *digest_name, unsigned char* key, size_t key_len, unsigned char *data, size_t data_len, unsigned char **out)
 {
     char *propq = NULL;
     OSSL_LIB_CTX *library_context = NULL;
@@ -499,7 +499,7 @@ int hmac_raw(char *digest_name, unsigned char* key, size_t key_len, unsigned cha
 }
 
 
-int hkdf_raw(int mode, unsigned char *digest_name, unsigned char *ikm, size_t ikm_len, unsigned char *salt, size_t salt_len, unsigned char *info, size_t info_len, unsigned char **okm, size_t okm_len )
+BF_EXPORT int hkdf_raw(int mode, unsigned char *digest_name, unsigned char *ikm, size_t ikm_len, unsigned char *salt, size_t salt_len, unsigned char *info, size_t info_len, unsigned char **okm, size_t okm_len )
 {
     EVP_KDF *kdf = NULL;
     EVP_KDF_CTX *kctx = NULL;
@@ -555,7 +555,7 @@ err:
     return okm_len;
 }
 
-unsigned char* ecdh_raw(EVP_PKEY *priv, EVP_PKEY *peer_pub, size_t *z_len_ptr)
+BF_EXPORT unsigned char* ecdh_raw(EVP_PKEY *priv, EVP_PKEY *peer_pub, size_t *z_len_ptr)
 {
     unsigned char* z=NULL;
     EVP_PKEY_CTX *ctx;
@@ -591,14 +591,14 @@ size_t  calc_ec_pub_from_priv(unsigned char* group_name, BIGNUM* priv_bn, unsign
     return pubkey_len; 
 }
 
-int clear_cofactor(EC_GROUP *group, EC_POINT *P, EC_POINT *Q, BN_CTX* ctx){
+BF_EXPORT int clear_cofactor(EC_GROUP *group, EC_POINT *P, EC_POINT *Q, BN_CTX* ctx){
     const BIGNUM *cofactor = EC_GROUP_get0_cofactor(group);
     // P = 0*Base + cofactor * Q
     EC_POINT_mul(group, P, NULL, Q, cofactor, ctx);
     return 1;
 }
 
-EC_POINT * mul_ec_point(unsigned char *group_name, BIGNUM *x, EC_POINT* Q, BIGNUM *y)
+BF_EXPORT EC_POINT * mul_ec_point(unsigned char *group_name, BIGNUM *x, EC_POINT* Q, BIGNUM *y)
 {
     int nid = OBJ_txt2nid(group_name);
 
@@ -618,7 +618,7 @@ err:
 
 
 
-EC_POINT * gen_ec_point(unsigned char *group_name, 
+BF_EXPORT EC_POINT * gen_ec_point(unsigned char *group_name, 
 BIGNUM *x_bn, BIGNUM *y_bn, int clear_cofactor_flag
 //unsigned char* x, size_t x_len, unsigned char *y, size_t y_len
 )
@@ -655,7 +655,7 @@ BIGNUM *x_bn, BIGNUM *y_bn, int clear_cofactor_flag
   // int EC_POINT_set_affine_coordinates(const EC_GROUP *group, EC_POINT *p, const BIGNUM *x, const BIGNUM *y, BN_CTX *ctx);
 }
 
-EVP_PKEY * gen_ec_key(unsigned char *group_name, unsigned char* priv_hex)
+BF_EXPORT EVP_PKEY * gen_ec_key(unsigned char *group_name, unsigned char* priv_hex)
 {
 
     int nid;
@@ -720,7 +720,7 @@ EVP_PKEY * gen_ec_key(unsigned char *group_name, unsigned char* priv_hex)
 }
 
 
-EVP_PKEY * gen_ec_pubkey(unsigned char *group_name, unsigned char* point_hex)
+BF_EXPORT EVP_PKEY * gen_ec_pubkey(unsigned char *group_name, unsigned char* point_hex)
 {
     unsigned char *point; 
     size_t point_len;
@@ -756,7 +756,7 @@ EVP_PKEY * gen_ec_pubkey(unsigned char *group_name, unsigned char* point_hex)
 }
 
 
-EVP_PKEY* export_ec_pubkey(EVP_PKEY *priv_pkey)
+BF_EXPORT EVP_PKEY* export_ec_pubkey(EVP_PKEY *priv_pkey)
 {
     size_t pubkey_len = 0;
     unsigned char* pubkey = NULL;
@@ -797,7 +797,7 @@ EVP_PKEY* export_ec_pubkey(EVP_PKEY *priv_pkey)
     return pub_pkey;
 }
 
-unsigned char* write_key_to_der(unsigned char* dst_fname, EVP_PKEY *pkey)
+BF_EXPORT unsigned char* write_key_to_der(unsigned char* dst_fname, EVP_PKEY *pkey)
 {
     BIO *out;
     out = BIO_new_file(dst_fname, "w+");
@@ -809,7 +809,7 @@ unsigned char* write_key_to_der(unsigned char* dst_fname, EVP_PKEY *pkey)
     return dst_fname;
 }
 
-unsigned char* write_key_to_pem(unsigned char* dst_fname, EVP_PKEY *pkey)
+BF_EXPORT unsigned char* write_key_to_pem(unsigned char* dst_fname, EVP_PKEY *pkey)
 {
     BIO *out;
     out = BIO_new_file(dst_fname, "w+");
@@ -821,7 +821,7 @@ unsigned char* write_key_to_pem(unsigned char* dst_fname, EVP_PKEY *pkey)
     return dst_fname;
 }
 
-unsigned char* write_pubkey_to_der(unsigned char* dst_fname, EVP_PKEY *pkey)
+BF_EXPORT unsigned char* write_pubkey_to_der(unsigned char* dst_fname, EVP_PKEY *pkey)
 {
     BIO *out;
     out = BIO_new_file(dst_fname, "w+");
@@ -833,7 +833,7 @@ unsigned char* write_pubkey_to_der(unsigned char* dst_fname, EVP_PKEY *pkey)
     return dst_fname;
 }
 
-unsigned char* write_pubkey_to_pem(unsigned char* dst_fname, EVP_PKEY *pkey)
+BF_EXPORT unsigned char* write_pubkey_to_pem(unsigned char* dst_fname, EVP_PKEY *pkey)
 {
     BIO *out;
     out = BIO_new_file(dst_fname, "w+");
@@ -845,7 +845,7 @@ unsigned char* write_pubkey_to_pem(unsigned char* dst_fname, EVP_PKEY *pkey)
     return dst_fname;
 }
 
-int ecdsa_sign_raw(EVP_PKEY *priv_key, const char *sig_name, char *msg, int msg_len, unsigned char **sig) 
+BF_EXPORT int ecdsa_sign_raw(EVP_PKEY *priv_key, const char *sig_name, char *msg, int msg_len, unsigned char **sig) 
 {
 
     const char *propq = NULL;
@@ -876,7 +876,7 @@ int ecdsa_sign_raw(EVP_PKEY *priv_key, const char *sig_name, char *msg, int msg_
     return sig_len;
 }
 
-int ecdsa_verify_raw(EVP_PKEY *pub_key, const char *sig_name, char *msg, int msg_len, unsigned char *sig, int sig_len) 
+BF_EXPORT int ecdsa_verify_raw(EVP_PKEY *pub_key, const char *sig_name, char *msg, int msg_len, unsigned char *sig, int sig_len) 
 {
 
     const char *propq = NULL;
@@ -900,7 +900,7 @@ int ecdsa_verify_raw(EVP_PKEY *pub_key, const char *sig_name, char *msg, int msg
     return ret;
 }
 
-int symmetric_cipher_raw(unsigned char *cipher_name, unsigned char *in, int in_len, unsigned char *key, unsigned char *iv, int iv_len, unsigned char **out, int is_encrypt )
+BF_EXPORT int symmetric_cipher_raw(unsigned char *cipher_name, unsigned char *in, int in_len, unsigned char *key, unsigned char *iv, int iv_len, unsigned char **out, int is_encrypt )
 {
     EVP_CIPHER_CTX *ctx;
 
@@ -934,7 +934,7 @@ int symmetric_cipher_raw(unsigned char *cipher_name, unsigned char *in, int in_l
     return out_len;
 }
 
-int aead_encrypt_raw(unsigned char *cipher_name, unsigned char *plaintext, int plaintext_len, unsigned char *aad, int aad_len, unsigned char *key, unsigned char *iv, int iv_len, unsigned char **ciphertext, unsigned char **tag, int tag_len)
+BF_EXPORT int aead_encrypt_raw(unsigned char *cipher_name, unsigned char *plaintext, int plaintext_len, unsigned char *aad, int aad_len, unsigned char *key, unsigned char *iv, int iv_len, unsigned char **ciphertext, unsigned char **tag, int tag_len)
 {
     EVP_CIPHER_CTX *ctx;
 
@@ -988,7 +988,7 @@ int aead_encrypt_raw(unsigned char *cipher_name, unsigned char *plaintext, int p
     return ciphertext_len;
 }
 
-int aead_decrypt_raw( unsigned char *cipher_name, unsigned char *ciphertext, int ciphertext_len, unsigned char *aad, int aad_len, unsigned char *tag, int tag_len, unsigned char *key, unsigned char *iv, int iv_len, unsigned char **plaintext)
+BF_EXPORT int aead_decrypt_raw( unsigned char *cipher_name, unsigned char *ciphertext, int ciphertext_len, unsigned char *aad, int aad_len, unsigned char *tag, int tag_len, unsigned char *key, unsigned char *iv, int iv_len, unsigned char **plaintext)
 {
     EVP_CIPHER_CTX *ctx;
     int len;
@@ -1043,7 +1043,7 @@ int aead_decrypt_raw( unsigned char *cipher_name, unsigned char *ciphertext, int
     }
 }
 
-void print_pkey_gettable_params(EVP_PKEY *pkey)
+BF_EXPORT void print_pkey_gettable_params(EVP_PKEY *pkey)
 {
     // https://www.openssl.org/docs/manmaster/man7/EVP_PKEY-EC.html
 
@@ -1063,7 +1063,7 @@ int sgn0_m_eq_1 (BIGNUM *x) {
     return (int) r;
 }
 
-BIGNUM* CMOV(BIGNUM *a, BIGNUM *b, int c){
+BF_EXPORT BIGNUM* CMOV(BIGNUM *a, BIGNUM *b, int c){
     if(c){
         return b;
     }
@@ -1071,7 +1071,7 @@ BIGNUM* CMOV(BIGNUM *a, BIGNUM *b, int c){
 }
 
 
-int calc_c1_c2_for_sswu(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BN_CTX *ctx)
+BF_EXPORT int calc_c1_c2_for_sswu(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BN_CTX *ctx)
 {
 
     BN_mod_inverse(c1, a, p, ctx);
@@ -1210,511 +1210,6 @@ map_to_curve_sswu_not_straight_line(BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, 
     BN_free(y2);
     return 1;
 }
-
-
-
-
-
-MODULE = Crypt::OpenSSL::BaseFunc		PACKAGE = Crypt::OpenSSL::BaseFunc		
-
-const char *OBJ_nid2sn(int n);
-
-const BIGNUM *EC_GROUP_get0_order(const EC_GROUP *group)
-
-int EC_POINT_invert(const EC_GROUP *group, EC_POINT *a, BN_CTX *ctx)
-
-int EC_POINT_add(const EC_GROUP *group, EC_POINT *r, const EC_POINT *a, const EC_POINT *b, BN_CTX *ctx)
-
-EC_POINT * mul_ec_point(unsigned char *group_name, BIGNUM *x, EC_POINT* Q, BIGNUM *y)
-
-EC_POINT* hex2point(unsigned char* group_name, unsigned char* point_hex)
-
-char *BN_bn2hex(const BIGNUM *a);
-
-BIGNUM* hex2bn(unsigned char* a)
-
-EVP_PKEY * gen_ec_key(unsigned char *group_name, unsigned char* priv_hex)
-
-EVP_PKEY * gen_ec_pubkey(unsigned char* group_name, unsigned char* point_hex)
-
-EC_POINT * gen_ec_point(unsigned char *group_name, BIGNUM *x_bn, BIGNUM *y_bn, int clear_cofactor_flag)
-
-char * bin2hex(unsigned char * bin, size_t len)
-
-BIGNUM* bn_mod_sqrt(BIGNUM *a, BIGNUM *p)
-
-unsigned char* read_key(EVP_PKEY *pkey)
-
-unsigned char* read_ec_pubkey(EVP_PKEY *pkey, int compressed_flag)
-
-unsigned char* read_pubkey(EVP_PKEY *pkey)
-
-EVP_PKEY* read_key_from_pem(unsigned char* keyfile) 
-
-EVP_PKEY* read_key_from_der(unsigned char* keyfile) 
-
-EVP_PKEY* read_pubkey_from_der(unsigned char* keyfile) 
-
-EVP_PKEY* read_pubkey_from_pem(unsigned char *keyfile)
-
-unsigned char* write_key_to_pem(unsigned char* dst_fname, EVP_PKEY *pkey)
-
-unsigned char* write_pubkey_to_pem(unsigned char* dst_fname, EVP_PKEY *pkey)
-
-unsigned char* write_key_to_der(unsigned char* dst_fname, EVP_PKEY *pkey)
-
-unsigned char* write_pubkey_to_der(unsigned char* dst_fname, EVP_PKEY *pkey)
-
-EVP_PKEY *export_rsa_pubkey(EVP_PKEY *rsa_priv)
-
-EVP_PKEY* export_ec_pubkey(EVP_PKEY *priv_pkey)
-
-size_t rsa_oaep_encrypt_raw(unsigned char *digest_name, EVP_PKEY *pub, unsigned char* in, size_t in_len, unsigned char ** out)
-
-size_t rsa_oaep_decrypt_raw(unsigned char *digest_name, EVP_PKEY *priv, unsigned char* in, size_t in_len, unsigned char ** out)
-
-BIGNUM* get_pkey_bn_param(EVP_PKEY *pkey, unsigned char *param_name)
-
-size_t get_pkey_octet_string_param_raw(EVP_PKEY *pkey, unsigned char *param_name, unsigned char **s)
-
-unsigned char* get_pkey_utf8_string_param(EVP_PKEY *pkey, unsigned char *param_name)
-
-void print_pkey_gettable_params(EVP_PKEY *pkey)
-
-char *EC_POINT_point2hex(const EC_GROUP *group, const EC_POINT *p, point_conversion_form_t form, BN_CTX *ctx)
-
-unsigned char* point2hex(unsigned char *group_name, EC_POINT *P, int conv_form)
-
-int OBJ_sn2nid (const char *s)
-
-const EVP_MD *EVP_get_digestbyname(const char *name)
-
-int EVP_MD_get_block_size(const EVP_MD *md)
-
-int EVP_MD_get_size(const EVP_MD *md)
-
-int EC_GROUP_get_curve(const EC_GROUP *group, BIGNUM *p, BIGNUM *a, BIGNUM *b, BN_CTX *ctx)
-
-EC_POINT *EC_POINT_new(const EC_GROUP *group)
-
-int EC_POINT_set_affine_coordinates(const EC_GROUP *group, EC_POINT *p, const BIGNUM *x, const BIGNUM *y, BN_CTX *ctx)
-
-int EC_POINT_get_affine_coordinates(const EC_GROUP *group, const EC_POINT *p, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
-
-int sgn0_m_eq_1(BIGNUM *x)
-
-int clear_cofactor(EC_GROUP *group, EC_POINT *P, EC_POINT *Q, BN_CTX* ctx)
-
-BIGNUM* CMOV(BIGNUM *a, BIGNUM *b, int c)
-
-int calc_c1_c2_for_sswu(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BN_CTX *ctx)
-
-int map_to_curve_sswu_straight_line(BIGNUM *c1, BIGNUM *c2, BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BIGNUM *u, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
-
-int map_to_curve_sswu_not_straight_line(BIGNUM *p, BIGNUM *a, BIGNUM *b, BIGNUM *z, BIGNUM *u, BIGNUM *x, BIGNUM *y, BN_CTX *ctx)
-
-
-SV* hkdf_main(int mode, unsigned char* digest_name, SV* ikm_sv, SV* salt_sv, SV* info_sv, size_t okm_len)
-    CODE:
-    {
-    unsigned char *ikm= NULL;
-    size_t ikm_len;
-    unsigned char *salt= NULL;
-    size_t salt_len;
-    unsigned char *info= NULL;
-    size_t info_len;
-    unsigned char* okm = NULL;
-    size_t out_len;
-
-    ikm = (unsigned char*) SvPV( ikm_sv, ikm_len );
-    salt = (unsigned char*) SvPV( salt_sv, salt_len );
-    info = (unsigned char*) SvPV( info_sv, info_len );
-
-    /*hexdump("hkdf main ikm", ikm, ikm_len);*/
-    /*hexdump("hkdf main salt", salt, salt_len);*/
-    /*hexdump("hkdf main info", info, info_len);*/
-
-    out_len = hkdf_raw(mode, digest_name, ikm, ikm_len, salt, salt_len, info, info_len, &okm, okm_len);
-
-    /*hexdump("hkdf main okm", okm, okm_len);*/
-
-    RETVAL = newSVpv(okm, out_len);
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* hmac(unsigned char* digest_name, SV* key_sv, SV* msg_sv)
-    CODE:
-    {
-    unsigned char *key= NULL;
-    size_t key_len;
-    unsigned char *msg= NULL;
-    size_t msg_len;
-    unsigned char* out = NULL;
-    size_t out_len = 0;
-
-    key = (unsigned char*) SvPV( key_sv, key_len );
-    msg = (unsigned char*) SvPV( msg_sv, msg_len );
-
-    out_len = hmac_raw(digest_name, key, key_len, msg, msg_len, &out);
-
-    RETVAL = newSVpv(out, out_len);
-
-    }
-    OUTPUT:
-        RETVAL
-
-
-SV* aes_cmac(unsigned char* cipher_name, SV* key_sv, SV* msg_sv)
-    CODE:
-    {
-    unsigned char *key= NULL;
-    size_t key_len;
-    unsigned char *msg= NULL;
-    size_t msg_len;
-    unsigned char* out = NULL;
-    size_t out_len;
-
-    key = (unsigned char*) SvPV( key_sv, key_len );
-    msg = (unsigned char*) SvPV( msg_sv, msg_len );
-
-    out = aes_cmac_raw(cipher_name, key, key_len, msg, msg_len, &out_len);
-
-    RETVAL = newSVpv(out, out_len);
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* pkcs12_key_gen(SV* password_sv, SV* salt_sv, unsigned int id, unsigned int iteration, unsigned char* digest_name)
-    CODE:
-    {
-    unsigned char *password= NULL;
-    size_t password_len;
-    unsigned char *salt= NULL;
-    size_t salt_len;
-    unsigned char* out = NULL;
-    size_t out_len;
-
-    password = (unsigned char*) SvPV( password_sv, password_len );
-    salt = (unsigned char*) SvPV( salt_sv, salt_len );
-
-    out = pkcs12_key_gen_raw(password, password_len, salt, salt_len, id, iteration, digest_name, &out_len);
-
-    RETVAL = newSVpv(out, out_len);
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* pkcs5_pbkdf2_hmac(SV* password_sv, SV* salt_sv, unsigned int iteration, unsigned char* digest_name)
-    CODE:
-    {
-    unsigned char *password= NULL;
-    size_t password_len;
-    unsigned char *salt= NULL;
-    size_t salt_len;
-    unsigned char* out = NULL;
-    size_t out_len;
-
-    password = (unsigned char*) SvPV( password_sv, password_len );
-    salt = (unsigned char*) SvPV( salt_sv, salt_len );
-
-    out = pkcs5_pbkdf2_hmac_raw(password, password_len, salt, salt_len, iteration, digest_name, &out_len);
-
-    RETVAL = newSVpv(out, out_len);
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* digest_array(unsigned char *digest_name, AV* arr)
-    CODE:
-    {
-    const EVP_MD *digest;
-    digest = EVP_get_digestbyname(digest_name);
-
-    EVP_MD_CTX *mdctx= EVP_MD_CTX_new();
-    EVP_DigestInit_ex2(mdctx, digest, NULL);
-
-    size_t arr_len = av_len(arr);
-    for(int i=0;i<=arr_len; i++)
-    {
-        SV** msg_SV = av_fetch(arr, i, 0);
-        size_t msg_len;
-        unsigned char* msg = (unsigned char*) SvPV( *msg_SV, msg_len );
-        EVP_DigestUpdate(mdctx, msg, msg_len);
-    }
-
-    unsigned int out_len = EVP_MD_get_size(digest);
-    unsigned char* out = OPENSSL_malloc(out_len); 
-    EVP_DigestFinal_ex(mdctx, out, &out_len);
-
-    EVP_MD_CTX_free(mdctx);
-
-    RETVAL = newSVpv(out, out_len);
-    }
-    OUTPUT:
-        RETVAL
-
-
-SV* ecdh(EVP_PKEY *priv, EVP_PKEY *peer_pub)
-    CODE:
-    {
-    unsigned char* out = NULL;
-    size_t out_len;
-
-    out = ecdh_raw(priv, peer_pub, &out_len);
-
-    RETVAL = newSVpv(out, out_len);
-    }
-    OUTPUT:
-        RETVAL
-
-SV* ecdsa_sign(EVP_PKEY *priv_key, const char* sig_name, SV* msg_SV)
-    CODE:
-    {
-    unsigned char *msg;
-    size_t msg_len;
-
-    unsigned char *sig;
-    size_t sig_len;
-    SV* sig_SV ;
-
-    msg = (unsigned char*) SvPV( msg_SV, msg_len );
-
-    sig_len = ecdsa_sign_raw(priv_key, sig_name, msg, msg_len, &sig);
-
-    sig_SV = newSVpv(sig, sig_len);
-
-    RETVAL = sig_SV;
-
-    }
-    OUTPUT:
-        RETVAL
-
-int ecdsa_verify(EVP_PKEY *pub_key, unsigned char* sig_name, SV* msg_SV, SV* sig_SV)
-    CODE:
-    {
-    unsigned char *msg;
-    size_t msg_len;
-    unsigned char *sig;
-    size_t sig_len;
-    int ret = 0;
-
-
-    msg = (unsigned char*) SvPV( msg_SV, msg_len );
-    sig = (unsigned char*) SvPV( sig_SV, sig_len );
-
-    ret = ecdsa_verify_raw(pub_key, sig_name, msg, msg_len, sig, sig_len);
-
-    RETVAL = ret;
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* symmetric_encrypt(unsigned char* cipher_name, SV* plaintext_SV, SV* key_SV, SV* iv_SV)
-    CODE:
-    {
-    unsigned char *plaintext;
-    size_t plaintext_len;
-    unsigned char *key;
-    size_t key_len;
-    unsigned char *iv;
-    size_t iv_len;
-
-    unsigned char *ciphertext;
-    size_t ciphertext_len;
-    SV* ciphertext_SV ;
-
-    plaintext = (unsigned char*) SvPV( plaintext_SV, plaintext_len );
-    key = (unsigned char*) SvPV( key_SV, key_len );
-    iv = (unsigned char*) SvPV( iv_SV, iv_len );
-
-    int is_encrypt = 1;
-    ciphertext_len = symmetric_cipher_raw(cipher_name, plaintext, plaintext_len, key, iv, iv_len, &ciphertext, is_encrypt);
-
-    ciphertext_SV = newSVpv(ciphertext, ciphertext_len);
-
-
-    RETVAL = ciphertext_SV;
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* symmetric_decrypt(unsigned char* cipher_name, SV* ciphertext_SV, SV* key_SV, SV* iv_SV)
-    CODE:
-    {
-    unsigned char *ciphertext;
-    size_t ciphertext_len;
-    unsigned char *key;
-    size_t key_len;
-    unsigned char *iv;
-    size_t iv_len;
-
-    unsigned char *plaintext;
-    size_t plaintext_len;
-    SV* plaintext_SV ;
-
-    ciphertext = (unsigned char*) SvPV( ciphertext_SV, ciphertext_len );
-    key = (unsigned char*) SvPV( key_SV, key_len );
-    iv = (unsigned char*) SvPV( iv_SV, iv_len );
-
-    int is_encrypt = 0;
-    plaintext_len = symmetric_cipher_raw(cipher_name, ciphertext, ciphertext_len, key, iv, iv_len, &plaintext, is_encrypt);
-
-    plaintext_SV = newSVpv(plaintext, plaintext_len);
-
-
-    RETVAL = plaintext_SV;
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* aead_encrypt(unsigned char* cipher_name, SV* plaintext_SV, SV* aad_SV, SV* key_SV, SV* iv_SV, int tag_len)
-    CODE:
-    {
-    unsigned char *plaintext;
-    size_t plaintext_len;
-    unsigned char *aad;
-    size_t aad_len;
-    unsigned char *key;
-    size_t key_len;
-    unsigned char *iv;
-    size_t iv_len;
-
-    unsigned char *ciphertext;
-    size_t ciphertext_len;
-    SV* ciphertext_SV ;
-    SV* tag_SV ;
-    unsigned char *tag;
-
-    AV* av = newAV();
-
-    plaintext = (unsigned char*) SvPV( plaintext_SV, plaintext_len );
-    aad = (unsigned char*) SvPV( aad_SV, aad_len );
-    key = (unsigned char*) SvPV( key_SV, key_len );
-    iv = (unsigned char*) SvPV( iv_SV, iv_len );
-
-    ciphertext_len = aead_encrypt_raw(cipher_name, plaintext, plaintext_len, aad, aad_len, key, iv, iv_len, &ciphertext, &tag, tag_len);
-
-    ciphertext_SV = newSVpv(ciphertext, ciphertext_len);
-    tag_SV = newSVpv(tag, tag_len);
-
-    av_push(av, ciphertext_SV);
-    av_push(av, tag_SV);
-
-    RETVAL = newRV_noinc((SV*)av);
-
-    /*int nid = OBJ_sn2nid(group_name);*/
-    /*SV* nid_sv = newSViv(nid);*/
-    /*SV* group_name_sv = newSVpv(group_name, strlen(group_name));*/
-
-    /*hv = newHV ();*/
-    /*hv_store (hv, "nid", strlen ("nid"), nid_sv, 0);*/
-    /*hv_store (hv, "group_name", strlen ("group_name"), group_name_sv , 0);*/
-    /*RETVAL = newRV_inc ((SV *) hv);*/
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* aead_decrypt(unsigned char* cipher_name, SV* ciphertext_SV, SV* aad_SV, SV* tag_SV, SV* key_SV, SV* iv_SV)
-    CODE:
-    {
-    SV *res =NULL;
-    unsigned char *plaintext;
-    int plaintext_len;
-    unsigned char *ciphertext;
-    size_t ciphertext_len;
-    unsigned char *aad;
-    size_t aad_len;
-    unsigned char *tag;
-    size_t tag_len;
-    unsigned char *key;
-    size_t key_len;
-    unsigned char *iv;
-    size_t iv_len;
-
-    ciphertext = (unsigned char*) SvPV( ciphertext_SV, ciphertext_len );
-    aad = (unsigned char*) SvPV( aad_SV, aad_len );
-    tag = (unsigned char*) SvPV( tag_SV, tag_len );
-    key = (unsigned char*) SvPV( key_SV, key_len );
-    iv = (unsigned char*) SvPV( iv_SV, iv_len );
-
-    plaintext_len = aead_decrypt_raw(cipher_name, ciphertext, ciphertext_len, aad, aad_len, tag, tag_len, key, iv, iv_len, &plaintext);
-
-    if(plaintext_len>0){
-        res = newSVpv(plaintext, plaintext_len);
-    }
-
-    RETVAL = res;
-    }
-    OUTPUT:
-        RETVAL
-
-
-SV* get_pkey_octet_string_param(EVP_PKEY *pkey, unsigned char* param_name)
-    CODE:
-    {
-    unsigned char *s;
-    size_t s_len;
-    SV* s_SV ;
-
-    s_len = get_pkey_octet_string_param_raw(pkey, param_name, &s);
-
-    s_SV = newSVpv(s, s_len);
-
-    RETVAL = s_SV;
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* rsa_oaep_encrypt(unsigned char* digest_name, EVP_PKEY *pub, SV* plaintext_SV)
-    CODE:
-    {
-    unsigned char *plaintext;
-    size_t plaintext_len;
-    unsigned char *ciphertext;
-    size_t ciphertext_len;
-    SV* ciphertext_SV ;
-
-    plaintext = (unsigned char*) SvPV( plaintext_SV, plaintext_len );
-
-    ciphertext_len = rsa_oaep_encrypt_raw(digest_name, pub, plaintext, plaintext_len, &ciphertext);
-
-    ciphertext_SV = newSVpv(ciphertext, ciphertext_len);
-
-    RETVAL = ciphertext_SV;
-
-    }
-    OUTPUT:
-        RETVAL
-
-SV* rsa_oaep_decrypt(unsigned char* digest_name, EVP_PKEY *priv, SV* ciphertext_SV)
-    CODE:
-    {
-    SV *res;
-    unsigned char *plaintext;
-    size_t plaintext_len;
-    unsigned char *ciphertext;
-    size_t ciphertext_len;
-
-    ciphertext = (unsigned char*) SvPV( ciphertext_SV, ciphertext_len );
-
-    plaintext_len = rsa_oaep_decrypt_raw(digest_name, priv, ciphertext, ciphertext_len, &plaintext);
-
-    res = newSVpv(plaintext, plaintext_len);
-
-    RETVAL = res;
-    }
-    OUTPUT:
-        RETVAL
 
 
 
